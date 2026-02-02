@@ -2,24 +2,34 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getDatabase, ref, push, Database } from 'firebase/database';
 import { DateResponse } from '../types';
 
-// NOTE: In a real deployment, these values should come from process.env or import.meta.env
-// For this generated code to be runnable immediately without crashing on empty keys, 
-// we will implement a "mock" mode if keys are missing.
+// Helper to get environment variables from either REACT_APP_ (CRA) or VITE_ (Vite)
+const getEnvVar = (key: string): string | undefined => {
+  // Check process.env (standard)
+  if (typeof process !== 'undefined' && process.env) {
+    const reactAppKey = `REACT_APP_${key}`;
+    const viteKey = `VITE_${key}`;
+    if (process.env[reactAppKey]) return process.env[reactAppKey];
+    if (process.env[viteKey]) return process.env[viteKey];
+    // Also check direct mapping if available
+    if (process.env[key]) return process.env[key];
+  }
+  return undefined;
+};
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "PLACEHOLDER_KEY",
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "placeholder.firebaseapp.com",
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL || "https://placeholder-project.firebaseio.com",
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "placeholder-project",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "placeholder.appspot.com",
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:123456789:web:abcdef",
+  apiKey: getEnvVar('FIREBASE_API_KEY') || "PLACEHOLDER_KEY",
+  authDomain: getEnvVar('FIREBASE_AUTH_DOMAIN') || "placeholder.firebaseapp.com",
+  databaseURL: getEnvVar('FIREBASE_DATABASE_URL') || "https://placeholder-project.firebaseio.com",
+  projectId: getEnvVar('FIREBASE_PROJECT_ID') || "placeholder-project",
+  storageBucket: getEnvVar('FIREBASE_STORAGE_BUCKET') || "placeholder.appspot.com",
+  messagingSenderId: getEnvVar('FIREBASE_MESSAGING_SENDER_ID') || "123456789",
+  appId: getEnvVar('FIREBASE_APP_ID') || "1:123456789:web:abcdef",
 };
 
 let app: FirebaseApp | undefined;
 let db: Database | undefined;
 
-// Initialize Firebase only if we haven't already
+// Initialize Firebase
 try {
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
@@ -29,7 +39,7 @@ try {
   // Initialize Realtime Database
   db = getDatabase(app);
 } catch (e) {
-  console.warn("Firebase initialization failed. Running in offline/demo mode. Check your configuration keys.");
+  console.warn("Firebase initialization failed:", e);
 }
 
 /**
@@ -48,17 +58,19 @@ export const recordResponse = async (responseType: 'YES' | 'NO' | 'MAYBE', evasi
     userAgent: navigator.userAgent
   };
 
-  if (!db || firebaseConfig.apiKey === "PLACEHOLDER_KEY") {
-    console.log("MOCK RTDB WRITE:", data);
-    // Simulate network delay
-    return new Promise(resolve => setTimeout(resolve, 800));
+  // If DB failed to initialize, we can't write
+  if (!db) {
+    console.error("Database not initialized. Cannot write data:", data);
+    return;
   }
 
   try {
     const responsesRef = ref(db, 'date_responses');
     await push(responsesRef, data);
+    console.log("Response recorded successfully to Firebase");
   } catch (error) {
-    console.error("Error writing to Firebase RTDB: ", error);
+    console.error("Error writing to Firebase RTDB:", error);
+    // We re-throw so the UI knows it failed (though we catch it in the UI currently)
     throw error;
   }
 };
