@@ -19,14 +19,24 @@ export default function App() {
   const handleYesClick = async () => {
     setIsSubmitting(true);
     
-    // Attempt to save to Firebase, but don't block UI if it fails (e.g. invalid config)
+    // Attempt to save to Firebase
     try {
-      await recordResponse(true, noHoverCount);
+      await recordResponse('YES', noHoverCount);
     } catch (error) {
       console.error("Failed to record response:", error);
     } finally {
       setIsSubmitting(false);
       setView('SUCCESS');
+    }
+  };
+
+  // Logic to handle "Maybe" click
+  const handleMaybeClick = async () => {
+    // We just record the response, the UI change is handled locally in ProposalCard for the 'playful message'
+    try {
+      await recordResponse('MAYBE', noHoverCount);
+    } catch (error) {
+      console.error("Failed to record maybe response:", error);
     }
   };
 
@@ -40,6 +50,7 @@ export default function App() {
         {view === 'PROPOSAL' ? (
           <ProposalCard 
             onYes={handleYesClick}
+            onMaybe={handleMaybeClick}
             onNoHover={handleNoHover}
             isSubmitting={isSubmitting}
           />

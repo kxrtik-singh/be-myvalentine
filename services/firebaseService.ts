@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, Firestore } from 'firebase/firestore';
+import { getDatabase, ref, push, Database } from 'firebase/database';
 import { DateResponse } from '../types';
 
 // NOTE: In a real deployment, these values should come from process.env or import.meta.env
@@ -9,6 +9,7 @@ import { DateResponse } from '../types';
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "PLACEHOLDER_KEY",
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "placeholder.firebaseapp.com",
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL || "https://placeholder-project.firebaseio.com",
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "placeholder-project",
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "placeholder.appspot.com",
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "123456789",
@@ -16,7 +17,7 @@ const firebaseConfig = {
 };
 
 let app: FirebaseApp | undefined;
-let db: Firestore | undefined;
+let db: Database | undefined;
 
 // Initialize Firebase only if we haven't already
 try {
@@ -25,35 +26,39 @@ try {
   } else {
     app = getApps()[0];
   }
-  db = getFirestore(app);
+  // Initialize Realtime Database
+  db = getDatabase(app);
 } catch (e) {
   console.warn("Firebase initialization failed. Running in offline/demo mode. Check your configuration keys.");
 }
 
 /**
- * Records the user's response to the Firestore database.
- * @param accepted Whether they clicked Yes
+ * Records the user's response to the Realtime Database.
+ * @param responseType The type of response (YES, NO, MAYBE)
  * @param evasiveManeuvers How many times the No button moved
  */
-export const recordResponse = async (accepted: boolean, evasiveManeuvers: number): Promise<void> => {
+export const recordResponse = async (responseType: 'YES' | 'NO' | 'MAYBE', evasiveManeuvers: number): Promise<void> => {
+  const accepted = responseType === 'YES';
+  
   const data: DateResponse = {
     accepted,
+    responseType,
     evasiveManeuvers,
-    timestamp: new Date(),
+    timestamp: new Date().toISOString(),
     userAgent: navigator.userAgent
   };
 
   if (!db || firebaseConfig.apiKey === "PLACEHOLDER_KEY") {
-    console.log("MOCK FIREBASE WRITE:", data);
+    console.log("MOCK RTDB WRITE:", data);
     // Simulate network delay
     return new Promise(resolve => setTimeout(resolve, 800));
   }
 
   try {
-    const responsesCol = collection(db, 'date_responses');
-    await addDoc(responsesCol, data);
+    const responsesRef = ref(db, 'date_responses');
+    await push(responsesRef, data);
   } catch (error) {
-    console.error("Error writing to Firebase: ", error);
+    console.error("Error writing to Firebase RTDB: ", error);
     throw error;
   }
 };

@@ -5,14 +5,16 @@ export interface Position {
 
 export interface DateResponse {
   accepted: boolean;
+  responseType: 'YES' | 'NO' | 'MAYBE';
   evasiveManeuvers: number; // How many times the 'No' button moved
-  timestamp: Date;
+  timestamp: string;
   userAgent: string;
 }
 
 export interface FirebaseConfig {
   apiKey: string;
   authDomain: string;
+  databaseURL: string;
   projectId: string;
   storageBucket: string;
   messagingSenderId: string;

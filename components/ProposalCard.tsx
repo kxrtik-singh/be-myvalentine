@@ -4,12 +4,15 @@ import { playPopSound, playClickSound } from '../services/audioService';
 
 interface ProposalCardProps {
   onYes: () => void;
+  onMaybe: () => void;
   onNoHover: () => void;
   isSubmitting: boolean;
 }
 
-export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onNoHover, isSubmitting }) => {
+export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onMaybe, onNoHover, isSubmitting }) => {
   const [noBtnPosition, setNoBtnPosition] = useState<Position | null>(null);
+  const [showMaybeMessage, setShowMaybeMessage] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -43,41 +46,85 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onNoHover, is
     onYes();
   };
 
+  const handleMaybeClick = () => {
+    playClickSound();
+    onMaybe();
+    setShowMaybeMessage(true);
+  };
+
+  const resetMaybe = () => {
+    playClickSound();
+    setShowMaybeMessage(false);
+  };
+
+  if (showMaybeMessage) {
+    return (
+      <div className="text-center animate-fade-in bg-white/30 backdrop-blur-md p-8 rounded-2xl border border-rose-200 shadow-xl max-w-md mx-auto">
+        <div className="text-6xl mb-4">😉</div>
+        <h2 className="text-3xl font-handwriting text-rose-600 mb-4">
+          Playing hard to get?
+        </h2>
+        <p className="text-slate-700 mb-6">
+          I respect the hustle. I'll be right here waiting when you're ready to say yes!
+        </p>
+        <button 
+          onClick={resetMaybe}
+          className="text-sm font-semibold text-rose-500 hover:text-rose-700 underline decoration-dotted underline-offset-4"
+        >
+          Okay, ask me again!
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="relative text-center" ref={containerRef}>
       <h1 className="text-5xl md:text-7xl font-handwriting text-rose-600 mb-8 drop-shadow-sm animate-pulse">
         Will you go on a date with me?
       </h1>
       
-      <div className="flex flex-col md:flex-row gap-8 items-center justify-center mt-12 min-h-[100px]">
-        {/* YES BUTTON */}
-        <button
-          onClick={handleYesClick}
-          disabled={isSubmitting}
-          className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xl rounded-full shadow-lg transform transition hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed z-20"
+      <div className="flex flex-col items-center justify-center gap-6 mt-12 min-h-[100px]">
+        
+        {/* Main Buttons Row */}
+        <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+          {/* YES BUTTON */}
+          <button
+            onClick={handleYesClick}
+            disabled={isSubmitting}
+            className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xl rounded-full shadow-lg transform transition hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed z-20"
+          >
+            {isSubmitting ? "Processing..." : "Yes, absolutely! 💖"}
+          </button>
+
+          {/* NO BUTTON */}
+          <button
+            ref={buttonRef}
+            onMouseEnter={moveButton}
+            onClick={moveButton}
+            style={
+              noBtnPosition
+                ? {
+                    position: 'fixed',
+                    top: `${noBtnPosition.top}px`,
+                    left: `${noBtnPosition.left}px`,
+                    transition: 'top 0.2s ease-out, left 0.2s ease-out',
+                  }
+                : {}
+            }
+            className="px-8 py-3 bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold text-lg rounded-full shadow-md z-20 cursor-default"
+          >
+            No way
+          </button>
+        </div>
+
+        {/* Maybe Later Button */}
+        <button 
+          onClick={handleMaybeClick}
+          className="mt-4 text-rose-400 hover:text-rose-600 font-medium text-sm transition-colors duration-200 hover:underline decoration-rose-300 underline-offset-4 opacity-80 hover:opacity-100"
         >
-          {isSubmitting ? "Processing..." : "Yes, absolutely! 💖"}
+          Maybe Later? 🕰️
         </button>
 
-        {/* NO BUTTON */}
-        <button
-          ref={buttonRef}
-          onMouseEnter={moveButton}
-          onClick={moveButton} // In case they manage to click, move it anyway!
-          style={
-            noBtnPosition
-              ? {
-                  position: 'fixed',
-                  top: `${noBtnPosition.top}px`,
-                  left: `${noBtnPosition.left}px`,
-                  transition: 'top 0.2s ease-out, left 0.2s ease-out',
-                }
-              : {}
-          }
-          className="px-8 py-3 bg-slate-300 hover:bg-slate-400 text-slate-700 font-semibold text-lg rounded-full shadow-md z-20 cursor-default"
-        >
-          No way
-        </button>
       </div>
 
       <p className="mt-8 text-rose-400 text-sm italic opacity-80">
