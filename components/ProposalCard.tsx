@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Position } from '../types';
+import { playPopSound, playClickSound } from '../services/audioService';
 
 interface ProposalCardProps {
   onYes: () => void;
@@ -15,6 +16,9 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onNoHover, is
   // Generate a random position within the viewport safely
   const moveButton = useCallback(() => {
     if (!buttonRef.current) return;
+    
+    // Play playful sound effect
+    playPopSound();
     
     const btnRect = buttonRef.current.getBoundingClientRect();
     const btnWidth = btnRect.width;
@@ -34,6 +38,11 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onNoHover, is
     onNoHover();
   }, [onNoHover]);
 
+  const handleYesClick = () => {
+    playClickSound();
+    onYes();
+  };
+
   return (
     <div className="relative text-center" ref={containerRef}>
       <h1 className="text-5xl md:text-7xl font-handwriting text-rose-600 mb-8 drop-shadow-sm animate-pulse">
@@ -43,7 +52,7 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onNoHover, is
       <div className="flex flex-col md:flex-row gap-8 items-center justify-center mt-12 min-h-[100px]">
         {/* YES BUTTON */}
         <button
-          onClick={onYes}
+          onClick={handleYesClick}
           disabled={isSubmitting}
           className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xl rounded-full shadow-lg transform transition hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed z-20"
         >

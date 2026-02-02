@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import confetti from 'canvas-confetti';
+import { playCelebrationSound } from '../services/audioService';
 
 interface SuccessCardProps {
   attempts: number;
@@ -8,6 +10,35 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({ attempts }) => {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
+    // Play sound and trigger confetti
+    playCelebrationSound();
+    
+    // Fire confetti from multiple angles
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#fb7185', '#f43f5e', '#e11d48']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#fb7185', '#f43f5e', '#e11d48']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+
     // Small delay for entrance animation
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
