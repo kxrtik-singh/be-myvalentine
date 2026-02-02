@@ -39,7 +39,7 @@ let isDemoMode = false;
  */
 export const checkFirebaseConnection = async (): Promise<boolean> => {
   const config = getFirebaseConfig();
-  console.log(config);
+  console.log(process.env);
   console.log(getEnvVar("FIREBASE_API_KEY"));
 
   // 1. Check Configuration
