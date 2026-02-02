@@ -59,7 +59,7 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onMaybe, onNo
 
   if (showMaybeMessage) {
     return (
-      <div className="text-center animate-fade-in bg-white/30 backdrop-blur-md p-8 rounded-2xl border border-rose-200 shadow-xl max-w-md mx-auto">
+      <div className="text-center animate-fade-in bg-white/60 backdrop-blur-md p-8 rounded-2xl border border-rose-200 shadow-xl max-w-md mx-auto">
         <div className="text-6xl mb-4">😉</div>
         <h2 className="text-3xl font-handwriting text-rose-600 mb-4">
           Playing hard to get?
@@ -69,7 +69,7 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onMaybe, onNo
         </p>
         <button 
           onClick={resetMaybe}
-          className="text-sm font-semibold text-rose-500 hover:text-rose-700 underline decoration-dotted underline-offset-4"
+          className="px-6 py-2 bg-rose-400 hover:bg-rose-500 text-white rounded-full font-semibold transition-colors shadow-sm"
         >
           Okay, ask me again!
         </button>
@@ -120,7 +120,7 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ onYes, onMaybe, onNo
         {/* Maybe Later Button */}
         <button 
           onClick={handleMaybeClick}
-          className="mt-4 text-rose-400 hover:text-rose-600 font-medium text-sm transition-colors duration-200 hover:underline decoration-rose-300 underline-offset-4 opacity-80 hover:opacity-100"
+          className="mt-6 px-6 py-2 bg-white/50 hover:bg-white/80 border border-rose-200 text-rose-500 hover:text-rose-600 font-medium text-sm rounded-full transition-all duration-200 shadow-sm"
         >
           Maybe Later? 🕰️
         </button>
